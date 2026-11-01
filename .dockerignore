@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+*.tsbuildinfo
+.git
+.codegraph
+.env
+.env.*
+!.env.example
+*.log

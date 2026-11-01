@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: .
+      target: development
+    command:
+      - /bin/sh
+      - -c
+      - pnpm install --frozen-lockfile && pnpm exec nest start --watch --debug 0.0.0.0:9229
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+    init: true
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:9229:9229"
+    stdin_open: true
+    tty: true
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+      - type: volume
+        source: node_modules
+        target: /app/node_modules
+        volume:
+          nocopy: true
+      - type: volume
+        source: dist
+        target: /app/dist
+        volume:
+          nocopy: true
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-shifters}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  node_modules:
+  dist:
+  postgres_data:
