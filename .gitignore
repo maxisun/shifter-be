@@ -9,6 +9,9 @@
 # Tests
 /coverage
 
+# Verification runs and their proof artifacts
+/.verify
+
 # Environment secrets
 .env
 .env.*

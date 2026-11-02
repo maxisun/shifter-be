@@ -69,6 +69,14 @@ Production sets variables in the environment; `node dist/main.js` reads nothing 
 
 `Dockerfile` is multi-stage: `development` (compose target, bind-mounts the repo), `build`, `production-dependencies`, and `production` (`node` user, `node dist/main.js`). The production `HEALTHCHECK` requests `/` and expects 2xx — keep a successful route there or update the healthcheck with it. Run the built image with `docker build -t shifters-be:production . && docker run --rm -p 3000:3000 shifters-be:production`.
 
+## Git workflow
+
+Use a task branch or isolated worktree for every change; keep `main` as the integration branch.
+
+- Before editing, run `git status --short --branch`.
+- If checked out on `main`, create a task branch or worktree before editing. Preserve existing commits and working-tree changes; ask before moving or discarding pre-existing work.
+- Commit and push only from the task branch. Verify the current branch before each commit or push.
+
 ## Before you commit
 
 Run all four and fix failures until green:
