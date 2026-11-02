@@ -77,7 +77,7 @@ Run all four and fix failures until green:
 pnpm run check && pnpm run build && pnpm run test && pnpm run test:e2e
 ```
 
-There is no CI configuration in this repository, so these checks are the whole gate. Add a spec for every new service or controller; the suite starts tiny and is meant to grow with the code.
+CI (`.github/workflows/ci.yml`) runs `pnpm run test:cov` on pull requests — opened, updated, reopened, or marked ready for review — and fails below the 80% coverage thresholds in `vitest.config.ts`. Lint, build and e2e are **not** in CI yet, so still run all four yourself before pushing. Rationale and sources: `docs/research/ci-pipeline.md`. Add a spec for every new service or controller; the suite starts tiny and is meant to grow with the code.
 
 ## Finding code
 

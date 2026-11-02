@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  # Runs whenever a PR is opened, updated (new commits), reopened, or marked
+  # ready for review. Draft PRs opened still count as `opened`.
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Reads the pnpm version from package.json ("packageManager"), so no
+      # `version:` input is needed. Must run before setup-node, whose pnpm
+      # cache calls `pnpm store path`.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Fails below the coverage thresholds in vitest.config.ts (80% lines,
+      # statements and functions). E2E is intentionally not run here yet.
+      - name: Run unit tests with coverage
+        run: pnpm run test:cov
