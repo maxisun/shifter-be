@@ -10,6 +10,8 @@ targets:
 dependencies:
   apm:
     - mattpocock/skills
+    - painhardcore/pstack/skills/create-verification-skill#v1.2.0
+    - painhardcore/pstack/skills/maintain-verification-skill#v1.2.0
   mcp: []
 includes: auto
 scripts: {}
