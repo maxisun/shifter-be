@@ -26,3 +26,7 @@ npm-debug.log*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+
+# APM dependencies
+apm_modules/
