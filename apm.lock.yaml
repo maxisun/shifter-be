@@ -196,6 +196,38 @@ dependencies:
     .agents/skills/writing-for-agents/agents/openai.yaml: sha256:eacb24b2a618cfb81dacb0416f4fdd75ddf3a8060f8ddb99aae1b1e301907e4b
   content_hash: sha256:85e73a1b3ba5510c07ebd2d2ed51b5eb45f4f5612657d0f713f538fbb972664e
   declared_license: MIT
+- repo_url: painhardcore/pstack
+  name: create-verification-skill
+  host: github.com
+  resolved_commit: 7f2d936bba86c2c512c4ad83e759752f4f065b7c
+  resolved_ref: v1.2.0
+  version: unknown
+  virtual_path: skills/create-verification-skill
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/create-verification-skill
+  - .agents/skills/create-verification-skill/SKILL.md
+  - .agents/skills/create-verification-skill/references/host-paths.md
+  deployed_file_hashes:
+    .agents/skills/create-verification-skill/SKILL.md: sha256:5bbbbee2bfcb55e98dc4cff6ed240e1cc0da3eebfcfc32b79ac3caebbcff706c
+    .agents/skills/create-verification-skill/references/host-paths.md: sha256:13fe5f553e823b95f5be06faf3b9e7b04278ced18a34f6d628b36c11bceb1a2a
+  content_hash: sha256:0489f8c939ab24725d50ba4065e9e0e41d936513a2ec7c542f4c0d8b60187d66
+- repo_url: painhardcore/pstack
+  name: maintain-verification-skill
+  host: github.com
+  resolved_commit: 7f2d936bba86c2c512c4ad83e759752f4f065b7c
+  resolved_ref: v1.2.0
+  version: unknown
+  virtual_path: skills/maintain-verification-skill
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/maintain-verification-skill
+  - .agents/skills/maintain-verification-skill/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/maintain-verification-skill/SKILL.md: sha256:ab055880604c7c92891dfdc787bd371f1c1670719897cbcf25db1fc60a6c2efc
+  content_hash: sha256:44592c4c1f0246e4111c40072e35ad60220043de174eb81999bfc47e7c82a088
 deployments:
 - kind: project-relative
   target: opencode
@@ -305,6 +337,33 @@ deployments:
   - mattpocock/skills
   active_owner: mattpocock/skills
   content_hash: sha256:edebc9e4fcfe102114012575eaa9600b9b5fd08c311664f389c36e7bc717740f
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/create-verification-skill
+  runtime: null
+  scope: project
+  owners:
+  - painhardcore/pstack/skills/create-verification-skill
+  active_owner: painhardcore/pstack/skills/create-verification-skill
+  content_hash: null
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/create-verification-skill/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - painhardcore/pstack/skills/create-verification-skill
+  active_owner: painhardcore/pstack/skills/create-verification-skill
+  content_hash: sha256:5bbbbee2bfcb55e98dc4cff6ed240e1cc0da3eebfcfc32b79ac3caebbcff706c
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/create-verification-skill/references/host-paths.md
+  runtime: null
+  scope: project
+  owners:
+  - painhardcore/pstack/skills/create-verification-skill
+  active_owner: painhardcore/pstack/skills/create-verification-skill
+  content_hash: sha256:13fe5f553e823b95f5be06faf3b9e7b04278ced18a34f6d628b36c11bceb1a2a
 - kind: project-relative
   target: opencode
   value: .agents/skills/diagnosing-bugs
@@ -584,6 +643,24 @@ deployments:
   - mattpocock/skills
   active_owner: mattpocock/skills
   content_hash: sha256:c8cb20f68ebf0edb4e497bc11ae5fcaa196004e661cd189015b04f4109ced7f1
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/maintain-verification-skill
+  runtime: null
+  scope: project
+  owners:
+  - painhardcore/pstack/skills/maintain-verification-skill
+  active_owner: painhardcore/pstack/skills/maintain-verification-skill
+  content_hash: null
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/maintain-verification-skill/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - painhardcore/pstack/skills/maintain-verification-skill
+  active_owner: painhardcore/pstack/skills/maintain-verification-skill
+  content_hash: sha256:ab055880604c7c92891dfdc787bd371f1c1670719897cbcf25db1fc60a6c2efc
 - kind: project-relative
   target: opencode
   value: .agents/skills/pr
