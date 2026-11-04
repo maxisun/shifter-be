@@ -8,6 +8,18 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    env: {
+      NODE_ENV: 'test',
+      LOG_LEVEL: 'silent',
+      DATABASE_URL: '',
+      S3_ENDPOINT: '',
+      S3_BUCKET: '',
+      S3_ACCESS_KEY_ID: '',
+      S3_SECRET_ACCESS_KEY: '',
+      RESEND_API_KEY: '',
+      EMAIL_FROM: '',
+      POSTHOG_API_KEY: '',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text'],
@@ -18,9 +30,17 @@ export default defineConfig({
       exclude: [
         // Bootstrap: starts an HTTP listener on import.
         'src/main.ts',
+        // Middleware wiring, exercised end to end instead of unit-by-unit.
+        'src/app.setup.ts',
         // Declarative wiring, no behaviour of its own.
         'src/**/*.module.ts',
         'src/**/*.spec.ts',
+        // Generated from the pinned contract; checked by `contract:check`.
+        'src/generated/**',
+        // Operational CLIs, exercised against a real PostgreSQL/R2 instead.
+        'src/database/migrate.ts',
+        'src/database/migrations/**',
+        'src/storage/storage-smoke-cli.ts',
       ],
       thresholds: {
         // Branch coverage is left out for now: the only branches reported

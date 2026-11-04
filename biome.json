@@ -6,7 +6,7 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!!**/dist"]
+		"includes": ["**", "!!**/dist", "!!src/generated/**"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -20,6 +20,9 @@
 		}
 	},
 	"javascript": {
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		},
 		"formatter": {
 			"quoteStyle": "single",
 			"trailingCommas": "all"

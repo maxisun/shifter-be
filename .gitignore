@@ -12,6 +12,9 @@
 # Verification runs and their proof artifacts
 /.verify
 
+# Verification screenshots saved by the editor
+/.openchamber
+
 # Environment secrets
 .env
 .env.*

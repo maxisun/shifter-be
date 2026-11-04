@@ -16,14 +16,14 @@ CMD ["pnpm", "run", "start:dev"]
 
 FROM base AS build
 ENV NODE_ENV=development
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 
 FROM base AS production-dependencies
 ENV NODE_ENV=production
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
 FROM node:${NODE_VERSION}-bookworm-slim AS production
