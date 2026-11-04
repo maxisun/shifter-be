@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppConfigModule } from '../config/app-config.module.js';
-import { APP_CONFIG, loadConfig } from '../config/config.js';
-import { StorageNotConfiguredError } from './object-storage.js';
-import { StorageModule } from './storage.module.js';
-import { StorageService } from './storage.service.js';
+import { AppConfigModule } from '../../config/app-config.module.js';
+import { APP_CONFIG, loadConfig } from '../../config/config.js';
+import { StorageNotConfiguredError } from '../object-storage.js';
+import { StorageService } from '../services/storage.service.js';
+import { StorageModule } from '../storage.module.js';
 
 @Injectable()
 class StorageConsumer {

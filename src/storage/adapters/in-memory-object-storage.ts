@@ -1,14 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
-import {
-  normalizePresignTtl,
-  type ObjectBody,
-  ObjectNotFoundError,
-  type ObjectStorage,
-  type PresignedDownload,
-  type PutObjectInput,
-  type StoredObject,
-} from '../object-storage.js';
+import { normalizePresignTtl, ObjectNotFoundError } from '../object-storage.js';
+import type {
+  ObjectBody,
+  ObjectStorage,
+  PresignedDownload,
+  PutObjectInput,
+  StoredObject,
+} from '../types/object-storage.js';
 
 interface StoredObjectRecord {
   body: Buffer;

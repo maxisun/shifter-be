@@ -5,7 +5,7 @@ class decorated with `@Injectable()`, the module registers and exports it, and
 the consumer receives it through its constructor.
 
 ```ts
-// src/storage/storage.service.ts
+// src/storage/services/storage.service.ts
 @Injectable()
 export class StorageService {
   constructor(
@@ -18,10 +18,16 @@ export class StorageService {
 }
 
 // src/storage/storage.module.ts
-@Global()
 @Module({
   providers: [
-    { provide: OBJECT_STORAGE, useFactory: createAdapter, inject: [APP_CONFIG] },
+    {
+      provide: OBJECT_STORAGE,
+      useFactory: (config: AppConfig) =>
+        config.storage
+          ? createS3ObjectStorage(config.storage)
+          : new UnconfiguredObjectStorage(),
+      inject: [APP_CONFIG],
+    },
     StorageService,
   ],
   exports: [StorageService],
@@ -67,6 +73,8 @@ export class CredentialsModule {}
   `new StorageService(new InMemoryObjectStorage())`. That tests the class, not
   the Nest wiring; keep at least one wiring test that proves the consumer
   receives the provider.
+- New service and module-wiring specs live in `src/<module>/tests/`; new
+  adapter/helper specs stay beside the helper.
 
 ## Checklist for a new service
 
@@ -74,5 +82,5 @@ export class CredentialsModule {}
 2. Constructor injection, no `new` inside the constructor.
 3. Register it in a module's `providers`.
 4. Add it to `exports` if another module injects it.
-5. Add a `Test.createTestingModule` test that resolves a consumer, not just
-   the provider.
+5. Add a `Test.createTestingModule` test under `src/<module>/tests/` that
+   resolves a consumer, not just the provider.

@@ -1,11 +1,10 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
 import { createS3ObjectStorage } from './adapters/s3-object-storage.js';
 import { UnconfiguredObjectStorage } from './adapters/unconfigured-object-storage.js';
 import { OBJECT_STORAGE } from './object-storage.js';
-import { StorageService } from './storage.service.js';
+import { StorageService } from './services/storage.service.js';
 
-@Global()
 @Module({
   providers: [
     {
@@ -18,7 +17,6 @@ import { StorageService } from './storage.service.js';
     },
     StorageService,
   ],
-  // Only the service is public. Feature code never injects the raw port.
   exports: [StorageService],
 })
 export class StorageModule {}

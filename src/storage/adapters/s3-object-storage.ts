@@ -8,15 +8,14 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { StorageConfig } from '../../config/config.js';
-import {
-  normalizePresignTtl,
-  type ObjectBody,
-  ObjectNotFoundError,
-  type ObjectStorage,
-  type PresignedDownload,
-  type PutObjectInput,
-  type StoredObject,
-} from '../object-storage.js';
+import { normalizePresignTtl, ObjectNotFoundError } from '../object-storage.js';
+import type {
+  ObjectBody,
+  ObjectStorage,
+  PresignedDownload,
+  PutObjectInput,
+  StoredObject,
+} from '../types/object-storage.js';
 
 /**
  * R2's documented checksum support lags the AWS SDK's 2025 defaults. Setting

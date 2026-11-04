@@ -1,10 +1,6 @@
-import type { Readable } from 'node:stream';
+import type { StorageContentType } from './types/storage.js';
 
-export type StorageContentType =
-  | 'application/pdf'
-  | 'image/jpeg'
-  | 'image/png'
-  | 'application/zip';
+export const OBJECT_STORAGE = Symbol('OBJECT_STORAGE');
 
 export const SUPPORTED_CONTENT_TYPES: readonly StorageContentType[] = [
   'application/pdf',
@@ -14,45 +10,6 @@ export const SUPPORTED_CONTENT_TYPES: readonly StorageContentType[] = [
 ];
 
 const supportedContentTypes = new Set<string>(SUPPORTED_CONTENT_TYPES);
-
-export interface PutObjectInput {
-  key: string;
-  body: Buffer | Readable;
-  contentLength: number;
-  contentType: StorageContentType;
-  contentDisposition: string;
-  cacheControl?: string;
-}
-
-export interface StoredObject {
-  etag?: string;
-}
-
-export interface ObjectBody {
-  body: Readable;
-  contentLength?: number;
-  contentType?: string;
-  contentDisposition?: string;
-}
-
-export interface PresignedDownload {
-  url: string;
-  expiresAt: Date;
-}
-
-/**
- * The low-level seam between the storage service and a blob-store adapter.
- * Feature code must not inject this port; it is internal to the storage
- * module. `StorageService` is the public interface.
- */
-export interface ObjectStorage {
-  put(input: PutObjectInput): Promise<StoredObject>;
-  get(key: string): Promise<ObjectBody>;
-  presignGet(key: string, expiresInSeconds: number): Promise<PresignedDownload>;
-  delete(key: string): Promise<void>;
-}
-
-export const OBJECT_STORAGE = Symbol('OBJECT_STORAGE');
 
 export class StorageNotConfiguredError extends Error {
   constructor() {

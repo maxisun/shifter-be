@@ -1,13 +1,13 @@
 import { Readable } from 'node:stream';
-import { InMemoryObjectStorage } from './adapters/in-memory-object-storage.js';
-import { UnconfiguredObjectStorage } from './adapters/unconfigured-object-storage.js';
+import { InMemoryObjectStorage } from '../adapters/in-memory-object-storage.js';
+import { UnconfiguredObjectStorage } from '../adapters/unconfigured-object-storage.js';
 import {
   InvalidStorageInputError,
   ObjectNotFoundError,
-  type ObjectStorage,
   StorageNotConfiguredError,
-} from './object-storage.js';
-import { StorageService } from './storage.service.js';
+} from '../object-storage.js';
+import { StorageService } from '../services/storage.service.js';
+import type { ObjectStorage } from '../types/object-storage.js';
 
 async function readAll(stream: Readable): Promise<Buffer> {
   const chunks: Buffer[] = [];

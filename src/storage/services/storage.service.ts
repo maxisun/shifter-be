@@ -6,22 +6,14 @@ import {
   isSupportedContentType,
   normalizePresignTtl,
   OBJECT_STORAGE,
-  type ObjectBody,
-  type ObjectStorage,
-  type PresignedDownload,
-  type StorageContentType,
-  type StoredObject,
-} from './object-storage.js';
-
-export interface StoreObjectInput {
-  key: string;
-  body: Buffer | Readable;
-  /** Required for streams; derived for buffers. */
-  contentLength?: number;
-  contentType: StorageContentType;
-  contentDisposition: string;
-  cacheControl?: string;
-}
+} from '../object-storage.js';
+import type {
+  ObjectBody,
+  ObjectStorage,
+  PresignedDownload,
+  StoredObject,
+} from '../types/object-storage.js';
+import type { StoreObjectInput } from '../types/storage.js';
 
 export const DEFAULT_CACHE_CONTROL = 'private, no-store';
 export const DEFAULT_PRESIGN_TTL_SECONDS = 900;

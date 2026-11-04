@@ -1,8 +1,6 @@
 import type { Readable } from 'node:stream';
-import {
-  ObjectNotFoundError,
-  type ObjectStorage,
-} from '../../src/storage/object-storage.js';
+import { ObjectNotFoundError } from '../../src/storage/object-storage.js';
+import type { ObjectStorage } from '../../src/storage/types/object-storage.js';
 
 async function readAll(stream: Readable): Promise<Buffer> {
   const chunks: Buffer[] = [];
