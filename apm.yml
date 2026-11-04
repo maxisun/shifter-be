@@ -12,6 +12,10 @@ dependencies:
     - mattpocock/skills
     - painhardcore/pstack/skills/create-verification-skill#v1.2.0
     - painhardcore/pstack/skills/maintain-verification-skill#v1.2.0
+    - git: DietrichGebert/ponytail
+      ref: 96608e078b2d5ea607c5c3b8b5a54d1c1fba6846
+      skills:
+        - ponytail
   mcp: []
 includes: auto
 scripts: {}
