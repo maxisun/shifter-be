@@ -118,22 +118,23 @@ function listenersOn(port) {
   }
 }
 
-async function probe(url, method = 'GET') {
+async function probe(url, method = 'GET', headers = {}) {
   const started = performance.now();
   try {
     const response = await fetch(url, {
       method,
+      headers,
       redirect: 'manual',
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
     });
     const body = await response.text();
-    const headers = {};
-    for (const [name, value] of response.headers) headers[name] = value;
+    const responseHeaders = {};
+    for (const [name, value] of response.headers) responseHeaders[name] = value;
     return {
       ok: true,
       status: response.status,
       statusText: response.statusText,
-      headers,
+      headers: responseHeaders,
       body,
       ms: Math.round(performance.now() - started),
     };
@@ -299,7 +300,7 @@ async function launch(options) {
     run.status = 'not-ready';
     await writeRun(run);
     fail(
-      `no HTTP response from ${url} within ${READY_TIMEOUT_MS / 1000}s. Log:\n${await tail(run.appLog)}`,
+      `no HTTP response from ${url} within ${READY_TIMEOUT_MS / 1000}s (last probe: ${JSON.stringify(last)}). Log:\n${await tail(run.appLog)}`,
     );
   }
 
@@ -453,6 +454,9 @@ function render(request, response, at) {
     `# at ${at}`,
     `# duration ${response.ms}ms`,
   ];
+  for (const [name, value] of Object.entries(request.headers ?? {})) {
+    lines.push(`# header ${name}: ${value}`);
+  }
   if (!response.ok) {
     lines.push(`# ERROR ${response.error}`);
     return lines.join('\n');
@@ -485,10 +489,18 @@ async function get(options, positionals) {
   const artifactsDir =
     active?.run.artifacts ?? path.join(STATE_DIR, 'artifacts');
   const method = (options.method ?? 'GET').toUpperCase();
+  const requestHeaders = {};
+  for (const raw of options.header ?? []) {
+    const separator = raw.indexOf('=');
+    if (separator < 1) {
+      fail(`--header must be NAME=VALUE, got ${JSON.stringify(raw)}`);
+    }
+    requestHeaders[raw.slice(0, separator).trim()] = raw.slice(separator + 1);
+  }
   const url = `${base}${target}`;
   const at = new Date().toISOString();
-  const response = await probe(url, method);
-  const text = render({ method, url }, response, at);
+  const response = await probe(url, method, requestHeaders);
+  const text = render({ method, url, headers: requestHeaders }, response, at);
 
   console.log(text);
   console.log('');
@@ -565,6 +577,7 @@ const { values, positionals } = parseArgs({
     'expect-body': { type: 'string' },
     'expect-body-contains': { type: 'string' },
     'expect-header': { type: 'string', multiple: true, default: [] },
+    header: { type: 'string', multiple: true, default: [] },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -579,8 +592,8 @@ if (values.help || !command) {
   doctor [--run-id ID]
       Read-only: pid, port ownership, dist freshness, node version, HTTP.
   get <path> [--method GET] [--base http://host:port] [--save NAME]
-             [--expect-status N] [--expect-body TEXT] [--expect-body-contains TEXT]
-             [--expect-header NAME=VALUE ...]
+             [--header NAME=VALUE ...] [--expect-status N] [--expect-body TEXT]
+             [--expect-body-contains TEXT] [--expect-header NAME=VALUE ...]
       Real request; prints it, optionally writes artifacts/<NAME>.http.txt.
       Without --base it targets the launched run; with it, any reachable URL.
   stop [--run-id ID]

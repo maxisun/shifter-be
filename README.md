@@ -1,162 +1,155 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# shifters-be
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS 12 HTTP API for ShiftPatch, built with TypeScript 6, native ESM, pnpm,
+Biome, Vitest, PostgreSQL through Kysely, and an S3-compatible storage adapter
+that points at Cloudflare R2 in deployed environments and MinIO locally.
+Feature code injects `StorageService`; the S3/R2 and in-memory adapters sit
+behind that interface.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The API contract is pinned from `maxisun/shifters-specs`. Generated types live
+in `src/generated/api/schema.d.ts` and are never edited by hand.
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Quick start with containers
 
 ```bash
-$ nvm install
-$ pnpm install
+nvm install && pnpm install
+cp .env.example .env       # local-only values; never commit it
+docker compose up --build
 ```
 
-## Compile and run the project
+Compose starts PostgreSQL, MinIO, a one-shot bucket creator, a migration job,
+and the app. The app is at `http://localhost:3000`, MinIO's console at
+`http://localhost:9001`, and the Node inspector at `localhost:9229`.
+
+Check it:
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+curl -i http://localhost:3000/health/live
+curl -i http://localhost:3000/health/ready
+curl -i http://localhost:3000/
 ```
 
-## Run tests
+## Local process (no app container)
+
+PostgreSQL and MinIO still come from compose:
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+docker compose up -d postgres minio minio-init
+pnpm run db:migrate:build
+pnpm run start:dev
 ```
 
-## Linting and formatting
+`.env` is loaded by `@nestjs/config` for every `nest start` variant. Environment
+variables already present in the shell win over file values. Production reads
+only the process environment.
 
-Biome provides linting and formatting with its recommended rules:
+## Endpoints
+
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Stable 2xx route for the container healthcheck |
+| `GET /health/live` | Process liveness; never touches PostgreSQL |
+| `GET /health/ready` | `SELECT 1` against PostgreSQL; 200 up, 503 down |
+
+Every response carries `X-Request-Id`, generated when the client does not send a
+safe value. API errors use the contract's `{ code, message, issues, requestId }`
+envelope for validation, unauthorized, forbidden, not found, conflict, and
+internal failures. Feature controllers are mounted under the contract's
+`/api/v1` prefix; operational routes (`/`, `/health/*`) stay at the origin.
+Health probes return their own `{ status, checks, requestId }` payload, including
+the 503 when PostgreSQL is down.
+
+## Configuration
+
+Copy `.env.example` and fill only what you need. Grouped integrations are
+all-or-nothing; production startup fails when a required group is missing.
+
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | Required in production |
+| `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Required in production; R2 uses `region=auto` |
+| `S3_PUBLIC_ENDPOINT` | Presign host when it differs from the container endpoint (local MinIO) |
+| `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` | Optional; no-op sender without them |
+| `POSTHOG_API_KEY`, `POSTHOG_HOST` | Optional; no-op analytics without a key |
+| `LOG_LEVEL` | `fatal` through `trace`, default `info` |
+| `PORT` | Default `3000` |
+| `TRUST_PROXY` | `true` behind a TLS-terminating proxy |
+
+Technical logs are structured JSON. Passwords, tokens, cookies, authorization
+headers, license numbers, TB outcomes, document contents, signed URLs, request
+query strings, and request/response bodies are redacted or never logged.
+
+## Contract
 
 ```bash
-$ pnpm run lint
-$ pnpm run format
-$ pnpm run check
+pnpm run contract:verify    # URL, version, digest, manifest, work items
+pnpm run contract:generate  # rewrite src/generated/api/schema.d.ts
+pnpm run contract:check     # fail when generated types drift
 ```
 
-The `useImportType` rule is disabled for `src/` because Nest needs runtime class imports for dependency injection.
+The contract dependency is an exact GitHub release-asset URL. `pnpm-lock.yaml`
+records its `integrity`; `contracts/work-spec.lock.json` records the ticket-set
+tag and commit. Update both only through a reviewed pull request.
 
-## Containers
+## Database
 
-With Colima running (start it with `colima start` if needed), run the development server and debugger with:
+Kysely migrations are compiled with the app.
 
 ```bash
-$ docker compose up --build
+pnpm run db:migrate:build   # build + apply pending migrations
+pnpm run db:migrate         # apply to an already-built dist/
 ```
 
-The app is available at `http://localhost:3000`; attach a Node debugger to `localhost:9229`. Stop the service with `Ctrl+C` and `docker compose down`.
+Migrations run as a separate compose service before the app starts. A deployed
+environment should run them as a release step, not from every app replica.
 
-Build and run the production image with:
+## Object storage smoke test
+
+Feature code injects `StorageService`, which validates keys, content types and
+lengths and clamps download TTLs. The S3/R2 adapter is one implementation under
+`src/storage/adapters/`; an in-memory adapter backs unit and future e2e tests.
+The smoke command drives the same service path.
+
+MinIO is the local stand-in and uses the same adapter as R2:
 
 ```bash
-$ docker build -t shifters-be:production .
-$ docker run --rm -p 3000:3000 shifters-be:production
+pnpm run storage:smoke:r2
+```
+
+Against a real R2 bucket, export the production `S3_*` variables first. The
+command performs put, presign, a signed GET, streaming get, delete, and a
+post-delete read, and prints no URL or credential.
+
+## Commands
+
+| Task | Command |
+| --- | --- |
+| Dev server | `pnpm run start:dev` |
+| Build | `pnpm run build` |
+| Production | `pnpm run start:prod` |
+| Unit tests | `pnpm run test` |
+| Coverage | `pnpm run test:cov` |
+| E2E tests | `pnpm run test:e2e` |
+| Lint, format, imports | `pnpm run check` (`--write` to fix) |
+| Build production image | `docker build -t shifters-be:production .` |
+
+The pre-commit gate is:
+
+```bash
+pnpm run check && pnpm run build && pnpm run test && pnpm run test:e2e
 ```
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+The production image runs `node dist/main.js` as the `node` user and keeps a
+`HEALTHCHECK` on `GET /`. Provide `DATABASE_URL` and the `S3_*` group through
+deployment secrets, run `node dist/database/migrate.js` as a release step, and
+terminate TLS at the platform or reverse proxy. The repository does not yet fix
+a hosting vendor; see [`docs/deployment.md`](docs/deployment.md) for the exact
+checklist and the external proof still outstanding.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Verification
 
-```bash
-$ pnpm add --global @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-To add it to this project, run this and approve the code it prints at [observe.nestjs.com/link](https://observe.nestjs.com/link) - signing up for free if you have no account:
-
-```bash
-$ pnpm dlx @nestjs/observe link
-```
-
-It installs `@nestjs/observe`, wires it into `AppModule` and `main.ts`, and writes the app key and secret into `.env`, which every `nest start` script (`start`, `start:dev`, `start:debug`) then loads. In production, set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment instead.
-
-Or do it by hand:
-
-```bash
-$ pnpm add @nestjs/observe
-```
-
-Then follow the [setup guide](https://docs.nestjs.com/observability/sdk) - it takes a single import and an app key.
-
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+`.opencode/skills/verify-shifters-be/` contains the HTTP verification harness.
+It launches the built artifact on an isolated port and stores each request and
+response under `.verify/runs/<run-id>/artifacts/` as evidence.

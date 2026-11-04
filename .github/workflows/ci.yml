@@ -14,10 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  unit-tests:
-    name: Unit tests
+  quality:
+    name: Contract, lint, build, unit and e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -37,7 +37,86 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Fails below the coverage thresholds in vitest.config.ts (80% lines,
-      # statements and functions). E2E is intentionally not run here yet.
-      - name: Run unit tests with coverage
+      # The pin is bytes, not a moving ref: fails on a branch URL, version
+      # drift, a missing lockfile integrity, or a corrupted manifest.
+      - name: Verify contract provenance
+        run: pnpm run contract:verify
+
+      - name: Check generated contract types
+        run: pnpm run contract:check
+
+      - name: Lint and format
+        run: pnpm run check
+
+      - name: Build
+        run: pnpm run build
+
+      # Fails below the coverage thresholds in vitest.config.ts.
+      - name: Unit tests with coverage
         run: pnpm run test:cov
+
+      - name: E2E tests
+        run: pnpm run test:e2e
+
+  migrations:
+    name: Migrations on a clean PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: shifters
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d shifters"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/shifters
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Apply migrations
+        run: node dist/database/migrate.js
+
+      # A second run must be a no-op, which proves the migration ledger works.
+      - name: Re-apply migrations
+        run: node dist/database/migrate.js
+
+      - name: Assert schema and ledger
+        run: |
+          node --input-type=module -e "
+          import pg from 'pg';
+          const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+          const ledger = await pool.query('select name from kysely_migration order by name');
+          const tables = await pool.query(\"select tablename from pg_tables where schemaname = 'public' order by tablename\");
+          await pool.end();
+          if (ledger.rows.length !== 1 || ledger.rows[0].name !== '0001_system_metadata') {
+            throw new Error('unexpected migration ledger: ' + JSON.stringify(ledger.rows));
+          }
+          if (!tables.rows.some((row) => row.tablename === 'system_metadata')) {
+            throw new Error('system_metadata table is missing');
+          }
+          console.log('migration ledger and schema verified');
+          "

@@ -1,4 +1,28 @@
 services:
+  migrate:
+    build:
+      context: .
+      target: development
+    command:
+      - /bin/sh
+      - -c
+      - pnpm install --frozen-lockfile && pnpm run build && node dist/database/migrate.js
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-shifters}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+      - type: volume
+        source: node_modules
+        target: /app/node_modules
+        volume:
+          nocopy: true
+
   app:
     build:
       context: .
@@ -10,6 +34,23 @@ services:
     environment:
       NODE_ENV: development
       PORT: "3000"
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-shifters}
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:${MINIO_PORT:-9000}
+      S3_REGION: us-east-1
+      S3_BUCKET: ${S3_BUCKET:-shiftpatch-local}
+      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-shiftpatch-local}
+      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-shiftpatch-local-secret}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      migrate:
+        condition: service_completed_successfully
     init: true
     ports:
       - "127.0.0.1:3000:3000"
@@ -25,11 +66,7 @@ services:
         target: /app/node_modules
         volume:
           nocopy: true
-      - type: volume
-        source: dist
-        target: /app/dist
-        volume:
-          nocopy: true
+
   postgres:
     image: postgres:17-alpine
     environment:
@@ -46,7 +83,51 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # MinIO is the local stand-in for Cloudflare R2. Local credentials only;
+  # never reuse them outside this compose project.
+  #
+  # The official MinIO Docker Hub images were withdrawn; this tag is a
+  # community build of the same MinIO release, and the mc mirror creates the
+  # bucket. Both are pinned and local-development only.
+  minio:
+    image: alpine/minio:RELEASE.2025-10-15T17-29-55Z
+    # The image runs as the minio user while Docker creates the named volume
+    # root-owned. Local-only trade-off; never run this service in production.
+    user: "0:0"
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-shiftpatch-local}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-shiftpatch-local-secret}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "127.0.0.1:${MINIO_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: rancher/mirrored-minio-mc:RELEASE.2023-06-28T21-54-17Z
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        mc alias set local http://minio:9000
+        "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing "local/$${S3_BUCKET}" &&
+        echo "bucket $${S3_BUCKET} ready"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-shiftpatch-local}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-shiftpatch-local-secret}
+      S3_BUCKET: ${S3_BUCKET:-shiftpatch-local}
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+
 volumes:
   node_modules:
-  dist:
   postgres_data:
+  minio_data:
