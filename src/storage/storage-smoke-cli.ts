@@ -3,7 +3,7 @@ import type { Readable } from 'node:stream';
 import { loadConfig } from '../config/config.js';
 import { redactLogText } from '../logging/log-sanitizer.js';
 import { createS3ObjectStorage } from './adapters/s3-object-storage.js';
-import { StorageService } from './storage.service.js';
+import { StorageService } from './services/storage.service.js';
 
 async function readAll(stream: Readable): Promise<Buffer> {
   const chunks: Buffer[] = [];

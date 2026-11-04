@@ -1,10 +1,10 @@
-import {
-  type ObjectBody,
-  type ObjectStorage,
-  type PresignedDownload,
-  StorageNotConfiguredError,
-  type StoredObject,
-} from '../object-storage.js';
+import { StorageNotConfiguredError } from '../object-storage.js';
+import type {
+  ObjectBody,
+  ObjectStorage,
+  PresignedDownload,
+  StoredObject,
+} from '../types/object-storage.js';
 
 /**
  * Lets the service boot without storage while failing loudly the moment a
