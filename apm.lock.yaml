@@ -1,6 +1,22 @@
 lockfile_version: '1'
 apm_version: 0.35.0
 dependencies:
+- repo_url: dietrichgebert/ponytail
+  materialization_repo_url: DietrichGebert/ponytail
+  name: ponytail
+  host: github.com
+  resolved_commit: 96608e078b2d5ea607c5c3b8b5a54d1c1fba6846
+  resolved_ref: 96608e078b2d5ea607c5c3b8b5a54d1c1fba6846
+  version: 96608e0
+  package_type: skill_bundle
+  deployed_files:
+  - .agents/skills/ponytail
+  - .agents/skills/ponytail/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/ponytail/SKILL.md: sha256:9badd22a32e19cb884e46dfa8d3aae82bb81dfa5484105b8b4f0262df823a509
+  content_hash: sha256:b995a71ddd28e617eb0e7968c7ec7a0cc8229b3af20065432ce5ecb1da2d92bc
+  skill_subset:
+  - ponytail
 - repo_url: mattpocock/skills
   name: mattpocock-skills
   host: github.com
@@ -661,6 +677,24 @@ deployments:
   - painhardcore/pstack/skills/maintain-verification-skill
   active_owner: painhardcore/pstack/skills/maintain-verification-skill
   content_hash: sha256:ab055880604c7c92891dfdc787bd371f1c1670719897cbcf25db1fc60a6c2efc
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/ponytail
+  runtime: null
+  scope: project
+  owners:
+  - dietrichgebert/ponytail
+  active_owner: dietrichgebert/ponytail
+  content_hash: null
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/ponytail/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - dietrichgebert/ponytail
+  active_owner: dietrichgebert/ponytail
+  content_hash: sha256:9badd22a32e19cb884e46dfa8d3aae82bb81dfa5484105b8b4f0262df823a509
 - kind: project-relative
   target: opencode
   value: .agents/skills/pr
