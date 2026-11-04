@@ -39,6 +39,8 @@ import { AppService } from './app.service.js';
 
 Feature code lives in `src/<feature>/`: `<feature>.module.ts`, controller, service, `dto/`, `entities/`, colocated specs. Wire new modules into `imports` of `AppModule` (`src/app.module.ts`) — a module that is not imported there never loads.
 
+Nest DI pattern — `@Injectable()` service, module `providers`/`exports`, consumer constructor injection, and a `Test.createTestingModule` wiring test: [`docs/nest-di.md`](docs/nest-di.md). Adapters are plain classes selected by a module factory; only the service is injectable.
+
 Cross-cutting infrastructure is already wired and should be reused rather than re-created:
 
 - `AppConfigModule` (`src/config/`) loads `.env.local` then `.env` in local development, validates with Zod, and provides the `APP_CONFIG` token. Production and tests ignore env files; production startup also calls `assertRuntimeConfig`.

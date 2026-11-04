@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppConfigModule } from '../config/app-config.module.js';
 import { APP_CONFIG, loadConfig } from '../config/config.js';
@@ -5,7 +6,24 @@ import { StorageNotConfiguredError } from './object-storage.js';
 import { StorageModule } from './storage.module.js';
 import { StorageService } from './storage.service.js';
 
+@Injectable()
+class StorageConsumer {
+  constructor(readonly storage: StorageService) {}
+}
+
 describe('StorageModule', () => {
+  it('injects StorageService into another Nest service', async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppConfigModule, StorageModule],
+      providers: [StorageConsumer],
+    }).compile();
+
+    const consumer = moduleRef.get(StorageConsumer);
+
+    expect(consumer.storage).toBeInstanceOf(StorageService);
+    expect(consumer.storage).toBe(moduleRef.get(StorageService));
+  });
+
   it('exports StorageService backed by the unconfigured adapter', async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppConfigModule, StorageModule],
