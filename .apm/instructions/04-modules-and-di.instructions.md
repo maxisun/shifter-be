@@ -34,7 +34,6 @@ src/<module>/
   decorators/
     <name>.decorator.ts
   tests/
-    <module>.module.spec.ts    # DI wiring test
     <service>.service.spec.ts  # service unit specs
 ```
 
@@ -64,7 +63,7 @@ Consumers inject the service, never the port. The service owns validation and po
 
 **Other Nest primitives** live under the module that owns them: `guards/<name>.guard.ts`, `interceptors/<name>.interceptor.ts`, `pipes/<name>.pipe.ts`, `filters/<name>.filter.ts`, and `decorators/<name>.decorator.ts`. Register guards, interceptors, pipes, and filters in the module's `providers`; use `APP_GUARD`, `APP_INTERCEPTOR`, `APP_PIPE`, or `APP_FILTER` only for app-wide behavior. Decorators are applied at declaration sites, not registered as providers. Shared primitives otherwise stay under `src/common/`.
 
-**Module wiring tests** live in `tests/<module>.module.spec.ts`. Build the module with `Test.createTestingModule({ imports: [<Module>] }).compile()`, add a consumer provider, and assert the consumer receives the public service — not just that the provider exists. Override external dependencies with `overrideProvider(...).useValue(...)` when needed. Instantiate helpers with no DI directly, and construct a service with a fake adapter when testing pure policy; keep at least one test that proves the wiring.
+**Modules are wiring, not behavior.** Do not add unit specs for `*.module.ts` files; they are excluded from coverage in `vitest.config.ts`. Test the service against a fake adapter and let e2e prove the wiring. Instantiate helpers with no DI directly, and construct a service with a fake adapter when testing pure policy.
 
 ```bash
 pnpm exec nest g resource orders   # scaffolds flat; move files into the layout
@@ -73,6 +72,6 @@ pnpm exec nest g module orders     # just the module
 
 The resource generator also emits service and controller specs: move the service spec to `tests/` and delete the controller spec (controllers are covered by e2e).
 
-See `docs/nest-di.md` for the worked DI example and wiring-test checklist.
+See `docs/nest-di.md` for the worked DI example and service checklist.
 
 Biome disables `useImportType` for `src/**` on purpose: Nest reads constructor parameter metadata at runtime, so injectables and DTOs are imported as values. Reach for `import type` only for types that never appear in a decorated signature (e.g. inside `test/**`).

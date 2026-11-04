@@ -65,16 +65,13 @@ export class CredentialsModule {}
   logic and for composition-root CLIs.
 - A consumer service is itself `@Injectable()` and registered in a module.
   Receiving a service in a constructor does not register the consumer.
-- For integration/wiring tests, resolve through
-  `Test.createTestingModule({ providers: [Consumer], imports: [Module] })
-  .compile()` and `moduleRef.get(Consumer)`. Use
-  `overrideProvider(Token).useValue(fake)` to replace an adapter.
-- For pure policy tests, direct construction is fine:
-  `new StorageService(new InMemoryObjectStorage())`. That tests the class, not
-  the Nest wiring; keep at least one wiring test that proves the consumer
-  receives the provider.
-- New service and module-wiring specs live in `src/<module>/tests/`; new
-  adapter/helper specs stay beside the helper.
+- For pure policy tests, construct the service directly:
+  `new StorageService(new InMemoryObjectStorage())`.
+- Modules are wiring, not behavior. Do not add unit specs for `*.module.ts`;
+  they are excluded from coverage. Prove the wiring by booting the app in an
+  e2e spec instead.
+- New service specs live in `src/<module>/tests/`; new adapter/helper specs
+  stay beside the helper.
 
 ## Checklist for a new service
 
@@ -82,5 +79,5 @@ export class CredentialsModule {}
 2. Constructor injection, no `new` inside the constructor.
 3. Register it in a module's `providers`.
 4. Add it to `exports` if another module injects it.
-5. Add a `Test.createTestingModule` test under `src/<module>/tests/` that
-   resolves a consumer, not just the provider.
+5. Add a service spec under `src/<module>/tests/` that exercises the behavior
+   against a fake adapter. Modules get no unit spec.
