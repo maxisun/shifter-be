@@ -3,6 +3,8 @@
 NestJS 12 HTTP API for ShiftPatch, built with TypeScript 6, native ESM, pnpm,
 Biome, Vitest, PostgreSQL through Kysely, and an S3-compatible storage adapter
 that points at Cloudflare R2 in deployed environments and MinIO locally.
+Feature code injects `StorageService`; the S3/R2 and in-memory adapters sit
+behind that interface.
 
 The API contract is pinned from `maxisun/shifters-specs`. Generated types live
 in `src/generated/api/schema.d.ts` and are never edited by hand.
@@ -102,6 +104,11 @@ Migrations run as a separate compose service before the app starts. A deployed
 environment should run them as a release step, not from every app replica.
 
 ## Object storage smoke test
+
+Feature code injects `StorageService`, which validates keys, content types and
+lengths and clamps download TTLs. The S3/R2 adapter is one implementation under
+`src/storage/adapters/`; an in-memory adapter backs unit and future e2e tests.
+The smoke command drives the same service path.
 
 MinIO is the local stand-in and uses the same adapter as R2:
 

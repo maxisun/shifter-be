@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { Readable } from 'node:stream';
 import { loadConfig } from '../config/config.js';
 import { redactLogText } from '../logging/log-sanitizer.js';
-import type { ObjectStorage } from './object-storage.js';
-import { createObjectStorage } from './s3-object-storage.js';
+import { createS3ObjectStorage } from './adapters/s3-object-storage.js';
+import { StorageService } from './storage.service.js';
 
 async function readAll(stream: Readable): Promise<Buffer> {
   const chunks: Buffer[] = [];
@@ -14,9 +14,9 @@ async function readAll(stream: Readable): Promise<Buffer> {
 }
 
 /**
- * Proves the adapter against a real bucket: put, presign, follow the
- * presigned URL over HTTPS, stream get, delete, and confirm the object is
- * gone. It prints no credentials and no signed URL.
+ * Proves the public storage path against a real bucket: store, presign,
+ * follow the signed URL, stream read, remove, and confirm the object is gone.
+ * It prints no credentials and no signed URL.
  *
  * Run against R2 with:
  *   pnpm run storage:smoke:r2
@@ -35,22 +35,21 @@ async function main(): Promise<void> {
     return;
   }
 
-  const storage: ObjectStorage = createObjectStorage(config.storage);
+  const storage = new StorageService(createS3ObjectStorage(config.storage));
   const key = `smoke/${randomUUID()}`;
   const payload = Buffer.from(`%PDF-1.4\nShiftPatch storage smoke ${key}\n`);
   const steps: string[] = [];
 
   try {
-    const stored = await storage.put({
+    const stored = await storage.store({
       key,
       body: payload,
-      contentLength: payload.byteLength,
       contentType: 'application/pdf',
       contentDisposition: 'attachment; filename="shiftpatch-smoke.pdf"',
     });
     steps.push('put');
 
-    const signed = await storage.presignGet(key, 60);
+    const signed = await storage.createDownloadLink(key, 60);
     steps.push('presign-get');
     const presignedResponse = await fetch(signed.url, {
       signal: AbortSignal.timeout(15_000),
@@ -66,19 +65,19 @@ async function main(): Promise<void> {
     }
     steps.push('presigned-fetch');
 
-    const object = await storage.get(key);
+    const object = await storage.read(key);
     const streamedBytes = await readAll(object.body);
     if (!streamedBytes.equals(payload)) {
       throw new Error('Streaming GET body did not match the uploaded bytes');
     }
     steps.push('get');
 
-    await storage.delete(key);
+    await storage.remove(key);
     steps.push('delete');
 
     let deleteVerified = false;
     try {
-      await storage.get(key);
+      await storage.read(key);
     } catch {
       deleteVerified = true;
     }

@@ -46,6 +46,35 @@
 					}
 				}
 			}
+		},
+		{
+			"includes": ["src/**", "!!src/storage/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["@aws-sdk/*", "@aws-sdk"],
+										"message": "Keep S3/R2 inside src/storage/adapters; feature code injects StorageService."
+									},
+									{
+										"group": [
+											"**/storage/adapters/**",
+											"**/s3-object-storage.js",
+											"**/in-memory-object-storage.js",
+											"**/unconfigured-object-storage.js"
+										],
+										"message": "Inject StorageService; storage adapters are internal to the storage module."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
 		}
 	]
 }

@@ -1,7 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
-import { OBJECT_STORAGE, UnconfiguredObjectStorage } from './object-storage.js';
-import { createObjectStorage } from './s3-object-storage.js';
+import { createS3ObjectStorage } from './adapters/s3-object-storage.js';
+import { UnconfiguredObjectStorage } from './adapters/unconfigured-object-storage.js';
+import { OBJECT_STORAGE } from './object-storage.js';
+import { StorageService } from './storage.service.js';
 
 @Global()
 @Module({
@@ -10,11 +12,13 @@ import { createObjectStorage } from './s3-object-storage.js';
       provide: OBJECT_STORAGE,
       useFactory: (config: AppConfig) =>
         config.storage
-          ? createObjectStorage(config.storage)
+          ? createS3ObjectStorage(config.storage)
           : new UnconfiguredObjectStorage(),
       inject: [APP_CONFIG],
     },
+    StorageService,
   ],
-  exports: [OBJECT_STORAGE],
+  // Only the service is public. Feature code never injects the raw port.
+  exports: [StorageService],
 })
 export class StorageModule {}

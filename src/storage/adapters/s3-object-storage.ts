@@ -7,14 +7,16 @@ import {
   type S3ClientConfig,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import type { StorageConfig } from '../config/config.js';
-import type {
-  ObjectBody,
-  ObjectStorage,
-  PresignedDownload,
-  PutObjectInput,
-  StoredObject,
-} from './object-storage.js';
+import type { StorageConfig } from '../../config/config.js';
+import {
+  normalizePresignTtl,
+  type ObjectBody,
+  ObjectNotFoundError,
+  type ObjectStorage,
+  type PresignedDownload,
+  type PutObjectInput,
+  type StoredObject,
+} from '../object-storage.js';
 
 /**
  * R2's documented checksum support lags the AWS SDK's 2025 defaults. Setting
@@ -58,27 +60,30 @@ export class S3ObjectStorage implements ObjectStorage {
   }
 
   async get(key: string): Promise<ObjectBody> {
-    const result = await this.client.send(
-      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
-    if (!result.Body) {
-      throw new Error('Stored object response had no body');
+    try {
+      const result = await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
+      if (!result.Body) {
+        throw new Error('Stored object response had no body');
+      }
+      return {
+        body: result.Body as Readable,
+        contentLength: result.ContentLength,
+        contentType: result.ContentType,
+        contentDisposition: result.ContentDisposition,
+      };
+    } catch (error) {
+      if (isMissingObject(error)) throw new ObjectNotFoundError(key);
+      throw error;
     }
-    return {
-      body: result.Body as Readable,
-      contentLength: result.ContentLength,
-      contentType: result.ContentType,
-      contentDisposition: result.ContentDisposition,
-    };
   }
 
   async presignGet(
     key: string,
     expiresInSeconds: number,
   ): Promise<PresignedDownload> {
-    // R2 accepts 1 second to 7 days; the product's download links are short
-    // lived, so cap at 15 minutes regardless of what a caller asks for.
-    const seconds = Math.max(1, Math.min(Math.floor(expiresInSeconds), 900));
+    const seconds = normalizePresignTtl(expiresInSeconds);
     const url = await getSignedUrl(
       this.presignClient,
       new GetObjectCommand({ Bucket: this.bucket, Key: key }),
@@ -97,7 +102,7 @@ export class S3ObjectStorage implements ObjectStorage {
   }
 }
 
-export function createObjectStorage(storage: StorageConfig): S3ObjectStorage {
+export function createS3ObjectStorage(storage: StorageConfig): S3ObjectStorage {
   const client = new S3Client(buildS3ClientConfig(storage));
   const presignClient = storage.publicEndpoint
     ? new S3Client(
@@ -105,4 +110,16 @@ export function createObjectStorage(storage: StorageConfig): S3ObjectStorage {
       )
     : client;
   return new S3ObjectStorage(client, presignClient, storage.bucket);
+}
+
+function isMissingObject(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const candidate = error as {
+    name?: unknown;
+    $metadata?: { httpStatusCode?: unknown };
+  };
+  return (
+    candidate.name === 'NoSuchKey' ||
+    candidate.$metadata?.httpStatusCode === 404
+  );
 }

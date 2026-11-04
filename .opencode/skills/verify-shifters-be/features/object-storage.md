@@ -1,6 +1,6 @@
 # Object storage
 
-The API talks to Cloudflare R2 through a narrow S3-compatible adapter. Local development points the same adapter at MinIO, so the code path is identical; only the endpoint, region, and credentials differ. The smoke command proves put, presign, a GET through the signed URL, a streaming get, delete, and a post-delete read.
+The API talks to Cloudflare R2 through a narrow S3-compatible adapter. Local development points the same adapter at MinIO, so the code path is identical; only the endpoint, region, and credentials differ. The smoke command drives the public `StorageService` and proves store, presign, a GET through the signed URL, a streaming read, delete, and a post-delete read.
 
 ## Sub-features
 
