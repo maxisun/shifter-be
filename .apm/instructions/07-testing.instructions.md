@@ -7,7 +7,7 @@ applyTo: "**/*"
 
 Vitest, not Jest — use `vi.fn()`, `vi.spyOn()`, and `vi.mock()`. `globals: true`, so `describe`, `it`, `expect` need no import.
 
-- Unit specs sit next to their subject as `src/**/*.spec.ts`. Write them for services (`*.service.ts`) and helpers (pure functions, adapters, validators, mappers, and other stateless utilities) only. Do not add unit specs for controllers, modules, filters, guards, interceptors, or DTOs; cover that behavior through e2e instead.
+- New unit specs live in the module's `tests/` folder as `src/<module>/tests/<subject>.spec.ts` — for example `src/storage/tests/storage.service.spec.ts` — not next to the implementation. Write them for services (`*.service.ts`) and helpers (pure functions, adapters, validators, mappers, and other stateless utilities) only. Do not add unit specs for controllers, modules, filters, guards, interceptors, or DTOs; cover that behavior through e2e instead.
 - Build dependency-injected services with `Test.createTestingModule({ ... }).compile()`; helpers with no DI may be constructed directly.
 - E2E specs live in `test/*.e2e-spec.ts`, boot `AppModule` with `createTestApp()` (`test/support/test-app.ts`), which applies the shipped middleware/validation/filter stack, drive it through `supertest`, and `await app.close()` in `afterEach`.
 - The e2e setup file (`test/setup-e2e.ts`) removes database/storage/email/analytics environment values, so e2e never touches real dependencies. Override `DatabaseService` when a test needs readiness to report up.
