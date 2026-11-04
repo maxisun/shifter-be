@@ -2,6 +2,12 @@
 
 Issues and specs for `shifters-be` live as Markdown files under `../shifters-specs/.scratch/`, relative to this repo root. The sibling `shifters-specs` folder is the shared specs workspace.
 
+## Pinning
+
+- Work items are consumed at the annotated tag `tickets-mvp-vX.Y.Z` in `../shifters-specs`, never from a moving branch. Record the tag and its full commit SHA in the pull request.
+- The API contract is a separate pin, published from the same repository. Follow `../shifters-specs/docs/guides/contract-consumption.md` before writing any handler, DTO, or client code.
+- Every implementation pull request records the contract version, the contract source commit, and the ticket-set tag and commit. The ticket's own `Guide:` line names the document to follow.
+
 ## Conventions
 
 - One feature per directory: `../shifters-specs/.scratch/<feature-slug>/`

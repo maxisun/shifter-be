@@ -95,7 +95,7 @@ This repo is indexed by CodeGraph (`.codegraph/`). Ask `codegraph explore "<symb
 
 ### Issue tracker
 
-Issues and specs for this repo live as local Markdown in `../shifters-specs/.scratch/`. See `docs/agents/issue-tracker.md`.
+Issues and specs for this repo live as local Markdown in `../shifters-specs/.scratch/`, consumed at the `tickets-mvp-vX.Y.Z` tag rather than a moving branch. The API contract is pinned separately: follow `../shifters-specs/docs/guides/contract-consumption.md`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
