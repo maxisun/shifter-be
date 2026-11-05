@@ -5,6 +5,7 @@ import { PINO_LOGGER } from '../logging/pino-logger.js';
 import { NoopAnalyticsClient } from './adapters/noop-analytics-client.js';
 import { PostHogAnalyticsClient } from './adapters/posthog-analytics-client.js';
 import { ANALYTICS_CLIENT } from './analytics-client.js';
+import { AnalyticsService } from './services/analytics.service.js';
 
 @Global()
 @Module({
@@ -17,7 +18,8 @@ import { ANALYTICS_CLIENT } from './analytics-client.js';
           : new NoopAnalyticsClient(),
       inject: [APP_CONFIG, PINO_LOGGER],
     },
+    AnalyticsService,
   ],
-  exports: [ANALYTICS_CLIENT],
+  exports: [AnalyticsService],
 })
 export class AnalyticsModule {}

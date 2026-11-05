@@ -13,5 +13,5 @@ Cross-cutting infrastructure is already wired and should be reused rather than r
 - `configureApp` mounts feature controllers under `/api/v1` (the contract's `servers` URL) and excludes `/` and `/health/*`. `installNotFoundHandler` runs after `app.init()` so unmatched paths outside the prefix still reach the same filter.
 - `DatabaseService` exposes typed Kysely through its `db` getter (`types/database-schema.ts`).
 - `StorageService` is the public storage interface: inject it. It owns key, content-type, length, cache, and TTL policy. `ObjectStorage` is an internal port; `StorageModule` selects the S3/R2 or unconfigured adapter, and the in-memory adapter is a test double. Biome rejects `@aws-sdk/*` or adapter imports outside `src/storage/**`.
-- `EMAIL_SENDER` and `ANALYTICS_CLIENT` are global injection tokens. Email and analytics are safe no-ops when unconfigured.
+- `EMAIL_SENDER` is a global injection token; `AnalyticsService` is the global analytics surface and `ANALYTICS_CLIENT` stays internal to `AnalyticsModule`. Email and analytics are safe no-ops when unconfigured.
 - `src/generated/api/schema.d.ts` is generated from the pinned contract. Never edit it by hand; change the contract and adopt a new release instead.
