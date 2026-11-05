@@ -2,7 +2,7 @@
 
 This directory is the maintained source for verifying the user-facing behavior of the shifters-be API. Read this index before driving the app, then use the matching feature file as the recipe.
 
-The surface is HTTP: a user is a client with a base URL. The API exposes `GET /`, `GET /health/live`, and `GET /health/ready`; Express also answers `HEAD /` through that route. Contract operations are mounted under `/api/v1`; operational routes stay at the origin. Unmatched requests receive the contract error envelope `{ code, message, issues, requestId }`, as do validation, authentication, authorization, conflict, and internal failures once their routes exist. Every response carries `X-Request-Id`, and technical logs are structured JSON with the same id. The production artifact is a multi-stage Docker image. The walking-skeleton ticket (repo-root-relative path: `../shifters-specs/.scratch/shiftpatch-mvp/issues/02-backend-walking-skeleton.md`) also adds PostgreSQL, migrations, contract-generated types, storage/email/analytics adapters, and MinIO in compose; the MVP tickets behind it add auth, shifts, claims, credentials, timesheets, and exports. Add a feature file for each capability as it lands, and keep the journeys honest about what exists.
+The surface is HTTP: a user is a client with a base URL. The API exposes `GET /` and `GET /health/live`; Express also answers `HEAD /` through that route. Contract operations are mounted under `/api/v1`; operational routes stay at the origin. Unmatched requests receive the contract error envelope `{ code, message, issues, requestId }`, as do validation, authentication, authorization, conflict, and internal failures once their routes exist. Every response carries `X-Request-Id`, and technical logs are structured JSON with the same id. The production artifact is a multi-stage Docker image. The walking-skeleton ticket (repo-root-relative path: `../shifters-specs/.scratch/shiftpatch-mvp/issues/02-backend-walking-skeleton.md`) also adds PostgreSQL, migrations, contract-generated types, storage/email/analytics adapters, and MinIO in compose; the MVP tickets behind it add auth, shifts, claims, credentials, timesheets, and exports. Add a feature file for each capability as it lands, and keep the journeys honest about what exists.
 
 ## Baseline preconditions
 
@@ -55,7 +55,7 @@ Keep implementation details out of the map. Name only user paths, stable handles
 ## Features
 
 - [Root endpoint](./root-endpoint.md) covers `GET /` and `HEAD /`, the body and content type, and the envelope returned for unmatched requests.
-- [Health and readiness](./health.md) covers liveness, a successful PostgreSQL round trip, and a 503 when the database is unreachable.
+- [Health](./health.md) covers process liveness and request-id echo.
 - [Request context and errors](./request-context-and-errors.md) covers request-id echo/generation, the error envelope, and log redaction.
 - [Object storage](./object-storage.md) covers put, presign, get, and delete through the S3-compatible adapter against local MinIO.
 - [Production container](./production-container.md) covers building the image, running it against compose PostgreSQL/MinIO, and its self-reported healthcheck.

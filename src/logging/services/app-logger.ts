@@ -1,7 +1,7 @@
 import { Inject, Injectable, type LoggerService } from '@nestjs/common';
 import type { Logger as PinoLogger } from 'pino';
-import { RequestContextService } from '../common/request-context.service.js';
-import { PINO_LOGGER } from './pino-logger.js';
+import { RequestContextService } from '../../common/request-context.service.js';
+import { PINO_LOGGER } from '../pino-logger.js';
 
 type PinoLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 

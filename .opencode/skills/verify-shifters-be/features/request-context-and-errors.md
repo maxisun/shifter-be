@@ -95,7 +95,7 @@ Preconditions:
 
 - A client id is accepted only when it is 8–128 characters from `[A-Za-z0-9._:-]`. Shorter, longer, or spaced values are replaced. That is deliberate; do not "fix" a UUID response to an unsafe input.
 - The access log is written when the response completes. Read it after the request, not before.
-- `/health/live` and `/health/ready` are deliberately excluded from access logging to keep readiness probes out of operational logs. Use `/` or a feature route when proving access-log redaction.
+- `/health/live` is deliberately excluded from access logging to keep liveness probes out of operational logs. Use `/` or a feature route when proving access-log redaction.
 - `--expect-header` is case-insensitive on the header name but exact on the value. A generated UUID cannot be asserted in advance; compare it to the body in the artifact instead.
 - The 404 message still says `Cannot GET /nope`; the code and envelope, not the wording, are the contract.
 - Validation, 401, 403, and 409 responses are exercised in `test/errors.e2e-spec.ts`. They become drivable routes with their feature tickets.

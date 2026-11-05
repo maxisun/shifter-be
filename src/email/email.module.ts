@@ -1,7 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
-import { EMAIL_SENDER, NoopEmailSender } from './email-sender.js';
-import { ResendEmailSender } from './resend-email-sender.js';
+import { NoopEmailSender } from './adapters/noop-email-sender.js';
+import { ResendEmailSender } from './adapters/resend-email-sender.js';
+import { EMAIL_SENDER } from './email-sender.js';
 
 @Global()
 @Module({

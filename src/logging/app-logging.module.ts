@@ -3,8 +3,8 @@ import type { Logger } from 'pino';
 import { RequestContextModule } from '../common/request-context.module.js';
 import { RequestContextService } from '../common/request-context.service.js';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
-import { AppLogger } from './app-logger.js';
 import { createPinoLogger, PINO_LOGGER } from './pino-logger.js';
+import { AppLogger } from './services/app-logger.js';
 
 @Global()
 @Module({

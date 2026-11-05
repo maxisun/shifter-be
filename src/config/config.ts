@@ -179,7 +179,7 @@ export function shouldIgnoreEnvFile(
 /**
  * Fails fast when the service itself is started without the dependencies a
  * deployed environment must have. Local development may run without them and
- * relies on readiness checks and explicit adapter errors instead.
+ * relies on explicit adapter errors instead.
  */
 export function assertRuntimeConfig(config: AppConfig): void {
   if (config.nodeEnv !== 'production') return;

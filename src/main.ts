@@ -7,8 +7,8 @@ import {
   type AppConfig,
   assertRuntimeConfig,
 } from './config/config.js';
-import { AppLogger } from './logging/app-logger.js';
 import { PINO_LOGGER } from './logging/pino-logger.js';
+import { AppLogger } from './logging/services/app-logger.js';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });

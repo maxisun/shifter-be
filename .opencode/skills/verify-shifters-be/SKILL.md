@@ -96,7 +96,7 @@ The production container has its own teardown (remove the named container and ru
 
 | Command | Purpose |
 | --- | --- |
-| `.opencode/skills/verify-shifters-be/scripts/control.mjs launch [--port N] [--skip-build] [--run-id ID]` | build, start, wait for readiness |
+| `.opencode/skills/verify-shifters-be/scripts/control.mjs launch [--port N] [--skip-build] [--run-id ID]` | build, start, wait for an HTTP response |
 | `.opencode/skills/verify-shifters-be/scripts/control.mjs doctor [--run-id ID]` | read-only drivability check |
 | `.opencode/skills/verify-shifters-be/scripts/control.mjs get <path> [flags]` | request plus evidence |
 | `.opencode/skills/verify-shifters-be/scripts/control.mjs stop [--run-id ID]` | stop only the PID this run started |

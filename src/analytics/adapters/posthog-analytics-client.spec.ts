@@ -1,5 +1,5 @@
 import type { Logger } from 'pino';
-import { NoopAnalyticsClient } from './analytics-client.js';
+import { NoopAnalyticsClient } from './noop-analytics-client.js';
 import { PostHogAnalyticsClient } from './posthog-analytics-client.js';
 
 function logger() {

@@ -25,7 +25,6 @@ Check it:
 
 ```bash
 curl -i http://localhost:3000/health/live
-curl -i http://localhost:3000/health/ready
 curl -i http://localhost:3000/
 ```
 
@@ -49,15 +48,13 @@ only the process environment.
 | --- | --- |
 | `GET /` | Stable 2xx route for the container healthcheck |
 | `GET /health/live` | Process liveness; never touches PostgreSQL |
-| `GET /health/ready` | `SELECT 1` against PostgreSQL; 200 up, 503 down |
 
 Every response carries `X-Request-Id`, generated when the client does not send a
 safe value. API errors use the contract's `{ code, message, issues, requestId }`
 envelope for validation, unauthorized, forbidden, not found, conflict, and
 internal failures. Feature controllers are mounted under the contract's
-`/api/v1` prefix; operational routes (`/`, `/health/*`) stay at the origin.
-Health probes return their own `{ status, checks, requestId }` payload, including
-the 503 when PostgreSQL is down.
+`/api/v1` prefix; operational routes (`/`, `/health/live`) stay at the origin.
+The liveness probe returns `{ status, requestId }`.
 
 ## Configuration
 

@@ -1,4 +1,4 @@
-import { NoopEmailSender } from './email-sender.js';
+import { NoopEmailSender } from './noop-email-sender.js';
 import {
   EmailDeliveryError,
   ResendEmailSender,
