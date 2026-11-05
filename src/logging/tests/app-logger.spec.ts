@@ -1,8 +1,8 @@
 import type { DestinationStream } from 'pino';
-import { RequestContextService } from '../common/request-context.service.js';
-import { loadConfig } from '../config/config.js';
-import { AppLogger } from './app-logger.js';
-import { createPinoLogger } from './pino-logger.js';
+import { RequestContextService } from '../../common/request-context.service.js';
+import { loadConfig } from '../../config/config.js';
+import { createPinoLogger } from '../pino-logger.js';
+import { AppLogger } from '../services/app-logger.js';
 
 function setup() {
   const lines: Record<string, unknown>[] = [];

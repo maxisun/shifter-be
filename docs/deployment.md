@@ -9,9 +9,8 @@ blockers.
 
 - The multi-stage production image builds and runs as the `node` user.
 - It serves `GET /` and its own `HEALTHCHECK` reaches `healthy`.
-- It joins the compose network, applies migrations with
-  `node dist/database/migrate.js`, and returns `checks.database = "up"` from
-  `GET /health/ready`.
+- It joins the compose network and applies migrations with
+  `node dist/database/migrate.js`.
 - The same S3 adapter performs put, presign, a signed fetch, streaming get, and
   delete against local MinIO.
 
@@ -37,12 +36,11 @@ Evidence lives under `.verify/runs/<run-id>/artifacts/`.
      `TRUST_PROXY=true` behind the platform proxy.
 4. Run `node dist/database/migrate.js` as a release step before the new app
    revision receives traffic. Do not run migrations from every replica.
-5. Point the platform health check at `GET /health/ready` (database-aware) and
-   its liveness check at `GET /health/live`.
+5. Point the platform health check at `GET /` or `GET /health/live`; both prove
+   process liveness, not database connectivity.
 6. Verify the deployed URL over HTTPS:
    ```sh
    curl -i https://<host>/health/live
-   curl -i https://<host>/health/ready
    curl -i https://<host>/
    ```
 7. Run the R2 smoke against the deployed bucket from a trusted machine:

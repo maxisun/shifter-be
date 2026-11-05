@@ -16,9 +16,9 @@ import {
   resolveRequestId,
 } from './common/request-id.js';
 import { APP_CONFIG, type AppConfig } from './config/config.js';
-import { AppLogger } from './logging/app-logger.js';
 import { httpLoggerOptions } from './logging/http-logging.js';
 import { PINO_LOGGER } from './logging/pino-logger.js';
+import { AppLogger } from './logging/services/app-logger.js';
 
 /**
  * Shared by `main.ts` and the e2e suite so tests exercise exactly the
@@ -58,7 +58,7 @@ export function configureApp(app: INestApplication): void {
   // Contract operations live under the pinned `servers` URL. Operational
   // routes stay at the origin so probes remain prefix-free.
   app.setGlobalPrefix('api/v1', {
-    exclude: ['/', 'health/live', 'health/ready'],
+    exclude: ['/', 'health/live'],
   });
 }
 

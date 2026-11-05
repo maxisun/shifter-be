@@ -114,11 +114,11 @@ describe('httpLoggerOptions', () => {
     ).toBe('error');
   });
 
-  it('does not access-log the readiness probes', () => {
+  it('does not access-log the liveness probe', () => {
     const options = httpLoggerOptions(logger);
     const ignore = options.autoLogging?.ignore;
     expect(ignore?.(request({ url: '/health/live' }))).toBe(true);
-    expect(ignore?.(request({ url: '/health/ready?x=1' }))).toBe(true);
+    expect(ignore?.(request({ url: '/health/live?x=1' }))).toBe(true);
     expect(ignore?.(request({ url: '/api/v1/shifts' }))).toBe(false);
   });
 });

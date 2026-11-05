@@ -2,7 +2,7 @@ import type {
   EmailMessage,
   EmailSender,
   EmailSendResult,
-} from './email-sender.js';
+} from '../types/email.js';
 
 export class EmailDeliveryError extends Error {
   constructor(readonly status: number) {

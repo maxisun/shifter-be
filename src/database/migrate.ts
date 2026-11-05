@@ -2,8 +2,8 @@ import type { Kysely } from 'kysely';
 import { Migrator } from 'kysely/migration';
 import { loadConfig } from '../config/config.js';
 import { createKysely } from './create-kysely.js';
-import type { DatabaseSchema } from './database-schema.js';
 import { StaticMigrationProvider } from './migrations/index.js';
+import type { DatabaseSchema } from './types/database-schema.js';
 
 async function main(): Promise<void> {
   const config = loadConfig(process.env);

@@ -1,13 +1,12 @@
 # Production container
 
-The production image serves the same API as `node dist/main.js` on port 3000, runs as the `node` user, and reports itself healthy through a `HEALTHCHECK` that fetches `/` and exits 0 on a 2xx. This journey runs it against the compose PostgreSQL and MinIO services, so readiness also proves a real database round trip. The stand-in is a local Colima VM: this recipe builds from the working tree and publishes the app only on loopback, without a registry, remote VM, ingress, HTTPS, or production secrets. Remote deployment and HTTPS remain unverified.
+The production image serves the same API as `node dist/main.js` on port 3000, runs as the `node` user, and reports itself healthy through a `HEALTHCHECK` that fetches `/` and exits 0 on a 2xx. This journey runs it against the compose PostgreSQL and MinIO services. The stand-in is a local Colima VM: this recipe builds from the working tree and publishes the app only on loopback, without a registry, remote VM, ingress, HTTPS, or production secrets. Remote deployment and HTTPS remain unverified.
 
 ## Sub-features
 
 - `container-build` builds the `production` stage under a run-specific image tag.
 - `container-run` serves `GET /` on a loopback-only host port using the compose network.
 - `container-migrate` applies migrations with the image's compiled migration CLI.
-- `container-ready` reports `checks.database = "up"` through compose PostgreSQL.
 - `container-healthcheck` reaches `healthy` on its own.
 - `container-user` runs as `node`, not root.
 
@@ -97,15 +96,6 @@ Preconditions:
     --expect-header 'content-type=text/html; charset=utf-8'
   ```
   All expectations pass and the artifact names port 3312.
-- **Readiness.** Prove the container reached compose PostgreSQL:
-  ```bash
-  .opencode/skills/verify-shifters-be/scripts/control.mjs get /health/ready \
-    --base http://127.0.0.1:3312 \
-    --save container-ready \
-    --expect-status 200 \
-    --expect-body-contains '"database":"up"'
-  ```
-  The body has `status: "ok"` and `checks.database: "up"`.
 - **User.** Read the configured user. Run `docker --context "$CONTEXT" inspect --format '{{.Config.User}}' shifters-be-verify`. It prints `node`.
 - **Proof.** Save only the health and user fields, plus the startup log line, beside the HTTP artifacts; do not save full container inspect output, which may include environment values. Run:
   ```bash
@@ -131,7 +121,7 @@ Preconditions:
 - This host has more than one Colima profile. `colima list` can show `default` and `vivir-be`; use the profile that owns this repo's images; never borrow another project's profile.
 - The production container refuses to boot with `NODE_ENV=production` unless `DATABASE_URL` and the complete `S3_*` group are present. That is intentional fail-fast behavior; pass them explicitly, never bake them into the image.
 - The container reaches PostgreSQL and MinIO by compose service name (`postgres`, `minio`), so it must join `shifters-be_default`. Publishing only to loopback keeps the container off the network.
-- The container's `HEALTHCHECK` calls `/`, which stays 2xx while the process is alive even if PostgreSQL is down. `/health/ready` is the database proof.
+- The container's `HEALTHCHECK` calls `/`, which stays 2xx while the process is alive even if PostgreSQL is down. There is no database-pinging readiness route.
 - The MinIO image is a pinned community build because the official Docker Hub images were withdrawn. It runs as root in compose to write the root-owned named volume; local only.
 - If the intended Docker context is unreachable, report the exact attempted command and error; do not substitute the local launch, which proves a different artifact.
 - The first build installs pnpm and the full dependency tree. Expect minutes. A slow build is not a hang; watch the stage names in the output.

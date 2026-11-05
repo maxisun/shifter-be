@@ -43,9 +43,7 @@ export function httpLoggerOptions(
       return 'info';
     },
     autoLogging: {
-      ignore: (request) =>
-        pathOnly(request.url) === '/health/live' ||
-        pathOnly(request.url) === '/health/ready',
+      ignore: (request) => pathOnly(request.url) === '/health/live',
     },
   };
 }

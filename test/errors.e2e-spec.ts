@@ -1,7 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
-import { DatabaseService } from '../src/database/database.service.js';
 import { ProbeController } from './support/probe.controller.js';
 import { createTestApp } from './support/test-app.js';
 
@@ -127,38 +126,6 @@ describe('request context and contract errors (e2e)', () => {
     expect(response.body).toEqual({
       status: 'ok',
       requestId: 'trace-12345678',
-    });
-  });
-
-  it('reports readiness down when PostgreSQL is not configured', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/health/ready')
-      .set('x-request-id', 'trace-12345678')
-      .expect(503);
-
-    expect(response.body).toEqual({
-      status: 'error',
-      checks: { database: 'down' },
-      requestId: 'trace-12345678',
-    });
-  });
-
-  it('reports readiness up when the database round trip succeeds', async () => {
-    await app.close();
-    app = await createTestApp([], (builder) =>
-      builder.overrideProvider(DatabaseService).useValue({
-        configured: true,
-        ping: vi.fn().mockResolvedValue(true),
-      }),
-    );
-
-    const response = await request(app.getHttpServer())
-      .get('/health/ready')
-      .expect(200);
-
-    expect(response.body).toMatchObject({
-      status: 'ok',
-      checks: { database: 'up' },
     });
   });
 

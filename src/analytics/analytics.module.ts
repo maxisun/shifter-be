@@ -2,8 +2,10 @@ import { Global, Module } from '@nestjs/common';
 import type { Logger } from 'pino';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
 import { PINO_LOGGER } from '../logging/pino-logger.js';
-import { ANALYTICS_CLIENT, NoopAnalyticsClient } from './analytics-client.js';
-import { PostHogAnalyticsClient } from './posthog-analytics-client.js';
+import { NoopAnalyticsClient } from './adapters/noop-analytics-client.js';
+import { PostHogAnalyticsClient } from './adapters/posthog-analytics-client.js';
+import { ANALYTICS_CLIENT } from './analytics-client.js';
+import { AnalyticsService } from './services/analytics.service.js';
 
 @Global()
 @Module({
@@ -16,7 +18,8 @@ import { PostHogAnalyticsClient } from './posthog-analytics-client.js';
           : new NoopAnalyticsClient(),
       inject: [APP_CONFIG, PINO_LOGGER],
     },
+    AnalyticsService,
   ],
-  exports: [ANALYTICS_CLIENT],
+  exports: [AnalyticsService],
 })
 export class AnalyticsModule {}

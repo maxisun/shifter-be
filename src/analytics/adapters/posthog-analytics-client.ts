@@ -1,20 +1,17 @@
-import { Inject, Injectable } from '@nestjs/common';
 import type { Logger } from 'pino';
-import type { PostHogConfig } from '../config/config.js';
-import { PINO_LOGGER } from '../logging/pino-logger.js';
-import type { AnalyticsClient, AnalyticsEvent } from './analytics-client.js';
+import type { PostHogConfig } from '../../config/config.js';
+import type { AnalyticsClient, AnalyticsEvent } from '../types/analytics.js';
 
 /**
  * PostHog's capture endpoint is enough for the MVP's bounded event list. The
  * call is best-effort: a timeout or rejection is logged by event name only and
  * never propagates into a committed workflow.
  */
-@Injectable()
 export class PostHogAnalyticsClient implements AnalyticsClient {
   constructor(
     private readonly config: PostHogConfig,
     private readonly environment: string,
-    @Inject(PINO_LOGGER) private readonly logger: Logger,
+    private readonly logger: Logger,
   ) {}
 
   async capture(event: AnalyticsEvent): Promise<void> {
