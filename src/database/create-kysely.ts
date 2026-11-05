@@ -1,6 +1,6 @@
 import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
-import type { DatabaseSchema } from './database-schema.js';
+import type { DatabaseSchema } from './types/database-schema.js';
 
 /**
  * One Kysely factory for the server and the migration CLI so both always

@@ -1,4 +1,4 @@
-import type { DatabaseService } from '../database/database.service.js';
+import type { DatabaseService } from '../database/services/database.service.js';
 import { HealthService } from './health.service.js';
 
 function database(ping: boolean): DatabaseService {

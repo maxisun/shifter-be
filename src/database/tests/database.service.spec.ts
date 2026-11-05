@@ -1,8 +1,8 @@
-import { loadConfig } from '../config/config.js';
+import { loadConfig } from '../../config/config.js';
 import {
   DatabaseNotConfiguredError,
   DatabaseService,
-} from './database.service.js';
+} from '../services/database.service.js';
 
 describe('DatabaseService', () => {
   it('stays unconfigured without DATABASE_URL', async () => {

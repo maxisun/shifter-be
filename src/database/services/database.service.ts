@@ -1,8 +1,8 @@
 import { Inject, Injectable, type OnModuleDestroy } from '@nestjs/common';
 import { type Kysely, sql } from 'kysely';
-import { APP_CONFIG, type AppConfig } from '../config/config.js';
-import { createKysely } from './create-kysely.js';
-import type { DatabaseSchema } from './database-schema.js';
+import { APP_CONFIG, type AppConfig } from '../../config/config.js';
+import { createKysely } from '../create-kysely.js';
+import type { DatabaseSchema } from '../types/database-schema.js';
 
 export class DatabaseNotConfiguredError extends Error {
   constructor() {

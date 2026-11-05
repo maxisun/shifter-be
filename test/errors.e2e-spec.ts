@@ -1,7 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
-import { DatabaseService } from '../src/database/database.service.js';
+import { DatabaseService } from '../src/database/services/database.service.js';
 import { ProbeController } from './support/probe.controller.js';
 import { createTestApp } from './support/test-app.js';
 

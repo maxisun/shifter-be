@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service.js';
+import { DatabaseService } from '../database/services/database.service.js';
 
 export interface ReadinessResult {
   ready: boolean;
